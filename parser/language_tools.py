@@ -1,0 +1,90 @@
+from typing import Dict, List, Set, Tuple
+import nltk
+from nltk.corpus import wordnet
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.probability import FreqDist, DictionaryProbDist
+
+
+class LanguageTools:
+    wnl = nltk.WordNetLemmatizer()
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def is_word(word: str) -> bool:
+        if wordnet.synsets(word):
+            return True
+        return False
+
+    @staticmethod
+    def return_base_words(tagged_words: List[Tuple[str, str]]) -> List[Dict]:
+        r_list: List[Dict] = []
+        for tagged_word in tagged_words:
+            word = tagged_word[0]
+            grammar_tag = tagged_word[1]
+            stem = LanguageTools.wnl.lemmatize(word, pos=LanguageTools._get_wordnet_pos(grammar_tag))
+
+            r_list.append({'word': word, 'stem': stem, 'g_tag': grammar_tag})
+        return r_list
+
+    @staticmethod
+    def return_base_words_from_string(text: str):
+        word_list = LanguageTools.tokenize(text)
+        tag_words = LanguageTools.tag_words(word_list)
+        stemmed_words = LanguageTools.return_base_words(tag_words)
+        return stemmed_words
+
+    @staticmethod
+    def get_paths(word: str, g_type: str):
+        r_paths: List[List] = []
+        w_synsets = wordnet.synsets(word, pos=LanguageTools._get_wordnet_pos(g_type))
+
+        w_synsets_length = len(w_synsets)
+        for i in range(0, w_synsets_length):
+            r_paths.append([])
+
+            word_set = w_synsets[i]
+            paths = word_set.hypernym_paths()
+            for path in paths:
+                for synset in path:
+                    r_paths[i].append(synset._name)
+        return r_paths
+
+    @staticmethod
+    def tokenize(words: str) -> List[str]:
+        return word_tokenize(words.lower())
+
+    @staticmethod
+    def tag_words(words: List[str]):
+        length = len(words)
+
+        for i in range(0, length):
+            word = words[i]
+            if word.find('-'):
+                split = word.split('-')
+                is_all_words = True
+                for s_word in split:
+                    if not LanguageTools.is_word(s_word):
+                        is_all_words = False
+
+                if is_all_words:
+                    words.pop(i)
+                    for j in range(0, len(split)):
+                        words.insert(i+j, split[j])
+        return nltk.pos_tag(words)
+
+    @staticmethod
+    def _get_wordnet_pos(treebank_tag):
+        if treebank_tag.startswith('J'):
+            return wordnet.ADJ
+        elif treebank_tag.startswith('V'):
+            return wordnet.VERB
+        elif treebank_tag.startswith('N'):
+            return wordnet.NOUN
+        elif treebank_tag.startswith('R'):
+            return wordnet.ADV
+        elif treebank_tag.startswith('S'):
+            return wordnet.ADJ_SAT
+        else:
+            return wordnet.NOUN
