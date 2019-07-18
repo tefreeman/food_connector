@@ -1,9 +1,6 @@
 from typing import Dict, List, Set, Tuple
-from pymongo import collection
-from language_tools import LanguageTools
 from word import Word
 from quantify import quantify_pre_suf
-from database import Database
 
 
 class Matcher:

@@ -6,6 +6,7 @@ from config import Config
 from database import Database
 from matcher import Matcher
 import copy
+from helpers import getsize
 
 
 class IngredientsProcessor:
@@ -36,8 +37,9 @@ class IngredientsProcessor:
             Matcher.load_processed_ingredients(IngredientsProcessor.get_ingredients_as_dict())
         else:
             print("Class IngredientsProcessor, _load_ingredients_from_db method has already been called")
-        t = ''
-        print(t)
+        print(' ingredients dict words: ', getsize(IngredientsProcessor._ingredients_dict_words))
+        print(' ingredients words list: ', getsize(IngredientsProcessor._ingredients_words_list))
+        print(' ingredients tree: ', getsize(IngredientsProcessor.ingredients_tree))
 
     @staticmethod
     def _add_to_ingredients_dir(ingredient: Dict):
