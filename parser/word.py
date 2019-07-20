@@ -1,14 +1,14 @@
 from language_tools import LanguageTools
-import sys
+
 
 class Word:
 
-    def __init__(self, word: str, stem: str, g_tag: str):
+    def __init__(self, word: str, stem: str, g_tag: str, is_brand: bool):
         self.id = -1
         self.word = word
         self.stem = stem
         self.g_tag = g_tag
-        self.is_brand = False
+        self.is_brand = is_brand
         self.is_unique = True
         self.is_word = LanguageTools.is_word(self.stem)
         self.freq = 0

@@ -1,25 +1,36 @@
 from pymongo import collection
 import copy
 from typing import Dict, List
+from ingredients_processor import IngredientsProcessor
+from database import Database
+from config import Config
 
 
 class BrandsProcessor:
     _brand_names = {}
     is_initialized = False
 
-    def __init__(self, nutritionix_grocery: collection = None):
+    def __init__(self):
         if not BrandsProcessor.is_initialized:
-            self.collection: collection = nutritionix_grocery
+            self.collection: collection = Database.get_collection(Config().nutritionix_db_name, Config().grocery_col_name)
             self._init_brand_names()
+
+    def _load_brand_items_into_ingredients(self):
+        cursor  = self.collection.find({})
+        num = 5652
+        for doc in cursor:
+            for item in doc['items']:
+                item['id'] = str(num)
+                IngredientsProcessor.add_to_ingredients(item, 'id', 'item_name', True)
+                num += 1
+                print(num)
+
 
     def _init_brand_names(self):
         pos = 0
         for doc in self.collection.find():
             name: str = (doc['name']).lower()
             BrandsProcessor._add_to_brand_name(name, doc['id'])
-            if pos > 20:
-                break
-            pos += 1
 
     @staticmethod
     def _add_to_brand_name(name: str, brand_id: str):
