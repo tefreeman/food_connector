@@ -1,46 +1,57 @@
-from typing import List, Dict
+from typing import List, Dict, NamedTuple
 from language_tools import LanguageTools
 from quantify import quantify_pre_suf
 from word import Word
 from config import Config
 from database import Database
 from matcher import Matcher
-import copy
-from helpers import getsize
-
+from helpers import getsize, save_json_to_file
+from ingredient import Ingredient, IngredientTuple
+from combined_properties import CombinedProperties
 
 class IngredientsProcessor:
+    # word tree structure
     _ingredients_dict_words: Dict = {}
+    # id (number): dict[words]
     _ingredients_words_list: Dict = {}
+
+    # id (number): name (str)
     ingredients_dir: Dict = {}
+
+    # word.stem : Dict[id, 0]
     ingredients_tree: Dict = {}
 
     _loaded = False
 
     def __init__(self):
-        IngredientsProcessor._load_ingredients_from_db()
+        IngredientsProcessor._load_all_ingredients()
 
     @staticmethod
-    def _load_ingredients_from_db():
+    def _load_all_ingredients():
         if not IngredientsProcessor._loaded:
-            col = Database.get_collection(Config().nutritionix_db_name, Config().food_col_name)
-            cursor = col.find({})
-            for ingredient in cursor:
-                IngredientsProcessor.add_to_ingredients(ingredient, 'id', 'food_name', False)
-                IngredientsProcessor._add_to_ingredients_dir(ingredient)
-            print("IngredientsProcessor:  ingredients Loaded!")
-            # auto load into Matcher
-            Matcher.load_processed_ingredients(IngredientsProcessor.get_ingredients_as_dict())
-        else:
-            print("Class IngredientsProcessor, _load_ingredients_from_db method has already been called")
-        print(' ingredients dict words: ', getsize(IngredientsProcessor._ingredients_dict_words))
-        print(' ingredients words list: ', getsize(IngredientsProcessor._ingredients_words_list))
-        print(' ingredients tree: ', getsize(IngredientsProcessor.ingredients_tree))
+            col = Database.get_collection(Config.nutritionix_db_name, Config.food_all_col_name)
+            num_docs = 6000
+            Ingredient.init_list_size(num_docs)
+            cursor = col.find({}).limit(6000)
+            for i_doc in cursor:
+                Ingredient.add_to_ingredients(i_doc)
+
+        IngredientsProcessor._build_structures()
+        IngredientsProcessor._loaded = True
 
     @staticmethod
-    def _add_to_ingredients_dir(ingredient: Dict):
-        if ingredient['id'] not in IngredientsProcessor.ingredients_tree:
-            IngredientsProcessor.ingredients_dir[str(ingredient['id'])] = ingredient['food_name']
+    def _build_structures():
+        for ingredient in Ingredient.get_all_ingredients():
+            IngredientsProcessor.add_to_ingredients(ingredient)
+            IngredientsProcessor._add_to_ingredients_dir(ingredient)
+            CombinedProperties.add_ingredient(ingredient)
+
+        Matcher.load_processed_ingredients(IngredientsProcessor.get_ingredients_as_dict())
+
+    @staticmethod
+    def _add_to_ingredients_dir(ingredient: IngredientTuple):
+        if ingredient.id not in IngredientsProcessor.ingredients_tree:
+            IngredientsProcessor.ingredients_dir[str(ingredient.id)] = ingredient.name
         else:
             print("possible error: ingredient_id in func: _add_to_ingredients_dir in "
                   " class IngredientsProcessor has already been defined")
@@ -61,13 +72,14 @@ class IngredientsProcessor:
             id_num += 1
 
     @staticmethod
-    def add_to_ingredients(ingredient: Dict, id_key: str, food_name_key: str, is_brand: bool):
-        ingredient_id: int = ingredient[id_key]
-        stemmed_words = LanguageTools.return_base_words_from_string(ingredient[food_name_key])
+    def add_to_ingredients(ingredient: IngredientTuple):
+        ingredient_id: int = ingredient.id
+        stemmed_words = LanguageTools.return_base_words_from_string(ingredient.name)
 
         word_objs: Dict[Word] = {}
+
         for stemmed_word in stemmed_words:
-            word_obj = Word(stemmed_word['word'], stemmed_word['stem'], stemmed_word['g_tag'], is_brand)
+            word_obj = Word(stemmed_word.word, stemmed_word.stem, stemmed_word.g_tag, ingredient.is_item)
             quantified_val = quantify_pre_suf(word_obj)
 
             word_objs[word_obj.stem] = word_obj
@@ -82,7 +94,7 @@ class IngredientsProcessor:
 
     @staticmethod
     def get_ingredients_as_dict():
-        return copy.deepcopy(IngredientsProcessor._ingredients_dict_words)
+        return IngredientsProcessor._ingredients_dict_words
 
     @staticmethod
     def get_ingredients_as_list() -> List[Word]:
@@ -97,6 +109,14 @@ class IngredientsProcessor:
             json_ingredients.append(ingredient.to_json())
 
         return json_ingredients
+
+    @staticmethod
+    def write_server_files():
+        save_json_to_file('i_dir.txt', IngredientsProcessor.ingredients_dir)
+        save_json_to_file('i_tree.txt', IngredientsProcessor.ingredients_tree)
+
+        del IngredientsProcessor.ingredients_tree
+        del IngredientsProcessor.ingredients_dir
 
     @staticmethod
     def get_ingredients_as_key_list() -> Dict[str, Dict[str, Word]]:

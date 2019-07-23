@@ -6,7 +6,7 @@ from config import Config
 
 
 class Train:
-    _col = Database.get_collection(db_name=Config().recipes_db_name, col_name=Config().recipes_all_col_name)
+    _col = Database.get_collection(db_name=Config.recipes_db_name, col_name=Config.recipes_all_col_name)
 
     @staticmethod
     def calc_accuracy():
@@ -14,7 +14,7 @@ class Train:
         non_match_count = 0
         match_count_top_6 = 0
         non_match_count_top_6 = 0
-        matches_col = Database.get_collection(Config().matches_db_name, Config().matches_col_name)
+        matches_col = Database.get_collection(Config.matches_db_name, Config.matches_col_name)
         cursor = matches_col.find({})
         for match in cursor:
             if not match['err']:
@@ -51,7 +51,7 @@ class Train:
 
     @staticmethod
     def init_examples():
-        matches_col = Database.get_collection(Config().matches_db_name, Config().matches_col_name)
+        matches_col = Database.get_collection(Config.matches_db_name, Config.matches_col_name)
         cursor = matches_col.find({})
         for match in cursor:
             if not match['err']:

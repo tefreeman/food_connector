@@ -1,7 +1,7 @@
 from typing import Dict, List, Set, Tuple
 from word import Word
 from quantify import quantify_pre_suf
-
+from language_tools import LanguageTools
 
 class Matcher:
     _processed_ingredients: Dict = {}
@@ -24,6 +24,10 @@ class Matcher:
     def _get_ingredient_match(ingredient_list: List[Word]):
         matches: List[Tuple[Word, int]] = []
         for word_obj in ingredient_list:
+
+            if Matcher._is_stop_word(word_obj):
+                continue
+
             if word_obj.stem in Matcher._processed_ingredients:
                 quanti = quantify_pre_suf(word_obj)
                 matches.append((Matcher._processed_ingredients[word_obj.stem], quanti))
@@ -44,4 +48,13 @@ class Matcher:
                     r_matches = r_matches.union(i_match[0].neg_ingredients)
             all_matches_by_ids.append(r_matches)
         return all_matches_by_ids
+
+    @staticmethod
+    def _is_stop_word(word_obj: Word):
+        if word_obj.g_tag == "CD":
+            return True
+        if LanguageTools.is_stop_word(word_obj.stem):
+            return True
+        else:
+            return False
 

@@ -1,8 +1,8 @@
 import sys
 from numbers import Number
 from collections import Set, Mapping, deque
-
-
+from typing import Dict, List
+from bson.json_util import dumps
 zero_depth_bases = (str, bytes, Number, range, bytearray)
 iteritems = 'items'
 
@@ -30,3 +30,19 @@ def getsize(obj_0):
             size += sum(inner(getattr(obj, s)) for s in obj.__slots__ if hasattr(obj, s))
         return size
     return inner(obj_0)
+
+
+def sort_key_number_dict(d: Dict, descending: bool) -> List[Dict]:
+    dict_list = list(d.items())
+    dict_list.sort(key=lambda x: x[1], reverse=descending)
+    return dict_list
+
+
+def save_json_to_file(name: str, d: [Dict, List]):
+    with open(name, 'w') as outfile:
+        outfile.write(dumps(d))
+
+
+def get_file_data(name: str) -> str:
+    with open(name, 'r') as readfile:
+        return readfile.read()

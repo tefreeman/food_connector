@@ -1,8 +1,15 @@
 from language_tools import LanguageTools
+from collections import namedtuple
+from dataclasses import dataclass
+
+@dataclass
+class B_Word:
+    word: str
+    stem: str
+    g_tag: str
 
 
 class Word:
-
     def __init__(self, word: str, stem: str, g_tag: str, is_brand: bool):
         self.id = -1
         self.word = word
@@ -13,7 +20,7 @@ class Word:
         self.is_word = LanguageTools.is_word(self.stem)
         self.freq = 0
 
-        self.tree = LanguageTools.get_paths(stem, g_tag)
+        self.tree = LanguageTools.get_paths_as_words(stem, g_tag)
         self.pos_ingredients = set()
         self.neg_ingredients = set()
 

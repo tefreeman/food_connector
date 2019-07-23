@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Set
 import pymongo
 from language_tools import LanguageTools
 from word import Word
@@ -8,6 +8,8 @@ from typing import List
 from ingredients_processor import IngredientsProcessor
 from probablity import Probability, KeyType, ProbFeatureKeys
 from operator import itemgetter
+from combined_properties import CombinedProperties
+
 
 class RecipeFeatures:
     _ingredients_db_list: Dict = IngredientsProcessor.get_ingredients_as_key_list()
@@ -53,11 +55,12 @@ class RecipeFeatures:
                 self.rel_match_count += 1
                 self.match_count += 1
                 RecipeFeatures._add_to_dict(ri_word.g_tag, self.match_g_tag)
-                RecipeFeatures._merge_to_dict(ri_word.tree, self.match_tree_count)
+                RecipeFeatures._merge_to_set(ri_word.tree, self.match_tree_count)
                 RecipeFeatures._merge_to_list(ri_word.tree, self.match_tree_depth_count, 1)
                 self.total_match_freq += ri_word.freq
             else:
                 self.unknown_match_count += 1
+        print('done')
 
     def get_as_dict(self):
         p = ProbFeatureKeys
@@ -95,6 +98,11 @@ class RecipeFeatures:
             length = len(li)
             for i in range(0, length):
                 RecipeFeatures._add_to_dict(li[i], d, pos)
+
+    @staticmethod
+    def _merge_to_set(s: Set[str], d: dict, pos=0):
+        for word in s:
+            RecipeFeatures._add_to_dict(word, d, pos)
 
     def calculate_frequencies(self):
         self.match_freq = self.match_count / (self.non_match_count + self.match_count)
@@ -175,7 +183,7 @@ class Recipe:
             ingredients: Dict[str, Word] = {}
             words_dict = LanguageTools.return_base_words_from_string(ingredient_text.lower())
             for word_dict in words_dict:
-                ingredients[word_dict['stem']] = Word(word_dict['word'], word_dict['stem'], word_dict['g_tag'])
+                ingredients[word_dict.stem] = Word(word_dict.word, word_dict.stem, word_dict.g_tag, False)
             recipe_ingredients.append(ingredients)
         return recipe_ingredients
 
