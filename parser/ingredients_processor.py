@@ -9,6 +9,7 @@ from helpers import getsize, save_json_to_file
 from ingredient import Ingredient, IngredientTuple
 from combined_properties import CombinedProperties
 
+
 class IngredientsProcessor:
     # word tree structure
     _ingredients_dict_words: Dict = {}
@@ -30,9 +31,9 @@ class IngredientsProcessor:
     def _load_all_ingredients():
         if not IngredientsProcessor._loaded:
             col = Database.get_collection(Config.nutritionix_db_name, Config.food_all_col_name)
-            num_docs = 6000
+            num_docs = col.count()
             Ingredient.init_list_size(num_docs)
-            cursor = col.find({}).limit(6000)
+            cursor = col.find({})
             for i_doc in cursor:
                 Ingredient.add_to_ingredients(i_doc)
 

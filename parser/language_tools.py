@@ -14,7 +14,8 @@ class B_Word:
 
 class LanguageTools:
     wnl = nltk.WordNetLemmatizer()
-    stop_word_set = set(stopwords.words('english'))
+    _stop_word_set = set(stopwords.words('english'))
+    _punc_set  = {',', '.', '/', '!', '#', '"', "'", '?', '(', ')', '%', '*', '@', '+', '_', '=', ':', ';', '[', ']', '{', '}', '&', '^'}
 
     def __init__(self):
         pass
@@ -61,7 +62,7 @@ class LanguageTools:
 
     @staticmethod
     def is_stop_word(text: str):
-        if text in LanguageTools.stop_word_set:
+        if text in LanguageTools._stop_word_set:
             return True
         else:
             return False
@@ -119,3 +120,15 @@ class LanguageTools:
             return wordnet.ADJ_SAT
         else:
             return wordnet.NOUN
+
+    @staticmethod
+    def filter_words(words: List[B_Word]):
+        return filter(LanguageTools._filter_punc, words)
+
+    @staticmethod
+    def _filter_punc(word: B_Word):
+        if word.stem in LanguageTools._stop_word_set or word.stem in LanguageTools._punc_set or word.g_tag == 'CD':
+            return False
+        else:
+            return True
+

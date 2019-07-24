@@ -1,4 +1,3 @@
-from scipy.stats import norm
 from typing import List, Dict, Tuple
 import math
 from enum import Enum

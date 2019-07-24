@@ -45,8 +45,10 @@ class Train:
                         match_count_top_6 += 1
                     else:
                         non_match_count_top_6 += 1
-
-        return (match_count / (non_match_count + match_count)), (match_count_top_6 / (non_match_count_top_6 + match_count_top_6))
+        try:
+            return (match_count / (non_match_count + match_count)), (match_count_top_6 / (non_match_count_top_6 + match_count_top_6))
+        except:
+            return 0
 
 
     @staticmethod
