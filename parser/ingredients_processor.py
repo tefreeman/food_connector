@@ -7,7 +7,6 @@ from database import Database
 from matcher import Matcher
 from helpers import getsize, save_json_to_file
 from ingredient import Ingredient, IngredientTuple
-from combined_properties import CombinedProperties
 
 
 class IngredientsProcessor:
@@ -25,19 +24,20 @@ class IngredientsProcessor:
     _loaded = False
 
     def __init__(self):
-        IngredientsProcessor._load_all_ingredients()
+        IngredientsProcessor._load_food_ingredients()
 
     @staticmethod
-    def _load_all_ingredients():
+    def _load_food_ingredients():
         if not IngredientsProcessor._loaded:
             col = Database.get_collection(Config.nutritionix_db_name, Config.food_all_col_name)
-            num_docs = col.count()
-            Ingredient.init_list_size(num_docs)
-            cursor = col.find({})
+            cursor = col.find({'is_item': False})
+            Ingredient.init_list_size(cursor.count())
+
             for i_doc in cursor:
                 Ingredient.add_to_ingredients(i_doc)
 
         IngredientsProcessor._build_structures()
+        IngredientsProcessor._write_server_files()
         IngredientsProcessor._loaded = True
 
     @staticmethod
@@ -45,7 +45,6 @@ class IngredientsProcessor:
         for ingredient in Ingredient.get_all_ingredients():
             IngredientsProcessor.add_to_ingredients(ingredient)
             IngredientsProcessor._add_to_ingredients_dir(ingredient)
-            CombinedProperties.add_ingredient(ingredient)
 
         Matcher.load_processed_ingredients(IngredientsProcessor.get_ingredients_as_dict())
 
@@ -112,7 +111,7 @@ class IngredientsProcessor:
         return json_ingredients
 
     @staticmethod
-    def write_server_files():
+    def _write_server_files():
         save_json_to_file('i_dir.txt', IngredientsProcessor.ingredients_dir)
         save_json_to_file('i_tree.txt', IngredientsProcessor.ingredients_tree)
 

@@ -8,7 +8,7 @@ from typing import List
 from ingredients_processor import IngredientsProcessor
 from probablity import Probability, KeyType, ProbFeatureKeys
 from operator import itemgetter
-from combined_properties import CombinedProperties
+
 
 class RecipeFeatures:
     _ingredients_db_list: Dict = IngredientsProcessor.get_ingredients_as_key_list()

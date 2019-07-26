@@ -118,8 +118,9 @@ class Probability:
         prob = 1.0
         prob *= Probability._calc_feature_prob(ProbFeatureKeys.MATCH_COUNT, recipe_feature.match_count)
         prob *= Probability._calc_feature_prob(ProbFeatureKeys.NON_MATCH_COUNT, recipe_feature.non_match_count)
-        # prob *= Probability._calc_feature_prob(ProbFeatureKeys.REL_MATCH_COUNT, recipe_feature.rel_match_count)
+        prob *= Probability._calc_feature_dict_prob(ProbFeatureKeys.MATCH_TREE_COUNT, recipe_feature.match_tree_count)
         return prob
+
 
     @staticmethod
     def add_example_to_dist(recipe_feature_set, example_state=True):

@@ -17,8 +17,8 @@ def main():
     s3 = time.time()
     Train.init_examples()
     print('Training Time:  ', time.time()-s3)
-    # acc = Train.calc_accuracy()
-    # print(acc)
+    acc = Train.calc_accuracy()
+    print(acc)
     return s1
 
 

@@ -10,7 +10,7 @@ from bson.json_util import dumps
 from matcher import Matcher
 from recipe import Recipe
 from train import Train
-from helpers import get_file_data
+from helpers import open_file_as_text
 from probablity import Probability
 from ingredients_processor import IngredientsProcessor
 app = Flask(__name__)
@@ -59,12 +59,12 @@ def submit_match():
 
 @app.route('/get_ingredients_dir')
 def get_ingredients_dir():
-    return get_file_data('i_dir.txt')
+    return open_file_as_text('i_dir.txt')
 
 
 @app.route('/get_ingredients_tree')
 def get_ingredients_tree():
-    return get_file_data('i_tree.txt')
+    return open_file_as_text('i_tree.txt')
 
 
 @app.route('/get_prob_info')

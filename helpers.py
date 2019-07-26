@@ -2,7 +2,7 @@ import sys
 from numbers import Number
 from collections import Set, Mapping, deque
 from typing import Dict, List
-from bson.json_util import dumps
+from bson.json_util import dumps, loads
 zero_depth_bases = (str, bytes, Number, range, bytearray)
 iteritems = 'items'
 
@@ -43,6 +43,11 @@ def save_json_to_file(name: str, d: [Dict, List]):
         outfile.write(dumps(d))
 
 
-def get_file_data(name: str) -> str:
+def open_file_as_text(name: str) -> str:
     with open(name, 'r') as readfile:
         return readfile.read()
+
+
+def open_file_as_json(name: str) -> Dict:
+    with open(name, 'r') as readfile:
+        return loads(readfile.read())

@@ -1,6 +1,5 @@
 from pymongo import MongoClient, collection, database
 from config import Config
-from typing import List, Set, Dict
 
 
 class Database:
